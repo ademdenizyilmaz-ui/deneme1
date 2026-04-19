@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Yeni Ben">
+<meta name="theme-color" content="#1D9E75">
+<title>Yeni Ben</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --green: #1D9E75; --green-light: #E1F5EE; --green-dark: #085041; --green-mid: #0F6E56;
+    --purple-light: #EEEDFE; --amber-light: #FAEEDA; --coral-light: #FAECE7; --blue-light: #E6F1FB;
+    --bg: #f7f8f6; --surface: #ffffff; --text: #1a1a1a; --text2: #666; --text3: #999;
+    --border: rgba(0,0,0,0.1); --radius: 14px; --radius-sm: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e0e0e; --surface: #1a1a1a; --text: #f0f0f0; --text2: #aaa; --text3: #666;
+      --border: rgba(255,255,255,0.1);
+      --green-light: #0a3026; --purple-light: #1e1b3a; --amber-light: #2a1f08; --coral-light: #2a1208; --blue-light: #0a1e30;
+    }
+  }
+  html, body { height: 100%; background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; overflow-x: hidden; }
+
+  /* Header */
+  .header { background: var(--surface); padding: 56px 20px 20px; border-bottom: 0.5px solid var(--border); }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .greeting { font-size: 13px; color: var(--text2); margin-bottom: 3px; }
+  .day-label { font-size: 26px; font-weight: 600; color: var(--text); }
+  .reset-btn { font-size: 12px; color: var(--text3); background: none; border: 0.5px solid var(--border); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+
+  /* Streak */
+  .streak-wrap { margin: 12px 0 0; background: var(--green-light); border-radius: var(--radius); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .streak-num { font-size: 36px; font-weight: 700; color: var(--green-dark); line-height: 1; }
+  .streak-sub { font-size: 12px; color: var(--green-mid); margin-top: 2px; }
+  .streak-dots { display: flex; gap: 6px; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; background: rgba(29,158,117,0.2); }
+  .dot.filled { background: var(--green); }
+  .dot.today { background: #5DCAA5; }
+
+  /* Progress */
+  .prog-wrap { padding: 16px 20px 0; }
+  .prog-row { display: flex; justify-content: space-between; margin-bottom: 7px; }
+  .prog-row span { font-size: 13px; color: var(--text2); }
+  .prog-row strong { font-size: 13px; color: var(--text); font-weight: 500; }
+  .prog-track { height: 7px; background: var(--border); border-radius: 999px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 999px; background: var(--green); width: 0%; transition: width 0.4s cubic-bezier(.4,0,.2,1); }
+
+  /* Tasks */
+  .section-title { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text3); padding: 20px 20px 8px; }
+  .tasks { flex: 1; padding: 0 12px; }
+  .task { display: flex; align-items: center; gap: 13px; padding: 13px 8px; border-radius: var(--radius-sm); cursor: pointer; transition: background 0.12s; user-select: none; border-bottom: 0.5px solid var(--border); }
+  .task:last-child { border-bottom: none; }
+  .task:active { background: var(--bg); }
+  .task-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .task-body { flex: 1; min-width: 0; }
+  .task-name { font-size: 15px; font-weight: 500; color: var(--text); }
+  .task-desc { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .task.done .task-name { color: var(--text3); text-decoration: line-through; }
+  .task.done .task-desc { color: var(--text3); }
+  .check-circle { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.18s; }
+  .task.done .check-circle { background: var(--green); border-color: var(--green); }
+  .check-circle svg { display: none; }
+  .task.done .check-circle svg { display: block; }
+
+  /* Motivasyon kutusu */
+  .motive-box { margin: 16px 20px; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .motive-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; }
+  .motive-text { font-size: 14px; color: var(--text2); line-height: 1.5; font-style: italic; }
+  .motive-refresh { display: inline-block; margin-top: 8px; font-size: 12px; color: var(--green); cursor: pointer; }
+
+  /* Completed overlay */
+  .congrats { display: none; margin: 0 20px 20px; background: var(--green-light); border-radius: var(--radius); padding: 18px; text-align: center; }
+  .congrats.show { display: block; }
+  .congrats-emoji { font-size: 36px; }
+  .congrats-title { font-size: 17px; font-weight: 600; color: var(--green-dark); margin-top: 8px; }
+  .congrats-sub { font-size: 13px; color: var(--green-mid); margin-top: 4px; }
+
+  /* Bottom safe area */
+  .spacer { height: 40px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="greeting" id="greeting">Merhaba!</div>
+      <div class="day-label" id="day-label">Gün 1</div>
+    </div>
+    <button class="reset-btn" onclick="resetDay()">Günü sıfırla</button>
+  </div>
+  <div class="streak-wrap">
+    <div>
+      <div class="streak-num" id="streak-num">0</div>
+      <div class="streak-sub">günlük seri</div>
+    </div>
+    <div class="streak-dots" id="streak-dots"></div>
+  </div>
+</div>
+
+<div class="prog-wrap">
+  <div class="prog-row">
+    <span>Bugünkü ilerleme</span>
+    <strong id="prog-text">0 / 5</strong>
+  </div>
+  <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+</div>
+
+<div class="section-title">Bugünün görevleri</div>
+<div class="tasks" id="tasks-list"></div>
+
+<div class="congrats" id="congrats">
+  <div class="congrats-emoji">🎉</div>
+  <div class="congrats-title">Tüm görevleri tamamladın!</div>
+  <div class="congrats-sub" id="congrats-sub">Serine harika bir gün geçirdin.</div>
+</div>
+
+<div class="motive-box">
+  <div class="motive-label">Günün sözü</div>
+  <div class="motive-text" id="motive-text">Yükleniyor...</div>
+  <span class="motive-refresh" onclick="nextQuote()">↻ Başka söz</span>
+</div>
+
+<div class="spacer"></div>
+
+<script>
+const TASKS = [
+  { icon: "🏃", color: "var(--blue-light)",   name: "10 dakika yürüyüş",       desc: "Dışarı çık, temiz hava al" },
+  { icon: "🧘", color: "var(--purple-light)", name: "Nefes egzersizi",          desc: "4-7-8 tekniği, 5 tekrar" },
+  { icon: "💬", color: "var(--amber-light)",  name: "Biriyle konuş",            desc: "Arkadaş ya da aile — gerçek bağlantı" },
+  { icon: "✏️", color: "var(--coral-light)",  name: "Bir şey yaz veya çiz",     desc: "Günlük, doodle, ne olursa" },
+  { icon: "🌿", color: "var(--green-light)",  name: "Telefonu bırak, 15 dk",    desc: "Sadece var ol — ekran yok" },
+];
+
+const QUOTES = [
+  "Küçük adımlar büyük değişimlerin başlangıcıdır.",
+  "Bugün yaptığın seçimler yarının alışkanlıklarını şekillendirir.",
+  "Kendine karşı nazik ol — her gün yeni bir başlangıçtır.",
+  "Gerçek güç, dürtülerine değil hedeflerine itaat etmektir.",
+  "Beynin değişebilir. Bunu sen yönlendirebilirsin.",
+  "Hayatın kalitesi, alışkanlıklarının kalitesidir.",
+  "Bugün biraz daha güçlüsün. Yarın daha da güçlü olacaksın.",
+  "Her 'hayır' dediğinde kendine bir 'evet' diyorsun.",
+];
+
+const KEY_DONE = 'yb_done';
+const KEY_STREAK = 'yb_streak';
+const KEY_DATE = 'yb_date';
+const KEY_QUOTE = 'yb_quote';
+
+function today() { return new Date().toISOString().slice(0,10); }
+
+function loadState() {
+  const saved = localStorage.getItem(KEY_DATE);
+  if (saved !== today()) {
+    const streak = parseInt(localStorage.getItem(KEY_STREAK) || '0');
+    const prevDone = JSON.parse(localStorage.getItem(KEY_DONE) || '[]');
+    const allDone = prevDone.every(Boolean) && prevDone.length === TASKS.length;
+    localStorage.setItem(KEY_STREAK, allDone ? streak + 1 : 0);
+    localStorage.setItem(KEY_DONE, JSON.stringify(TASKS.map(() => false)));
+    localStorage.setItem(KEY_DATE, today());
+  }
+  return JSON.parse(localStorage.getItem(KEY_DONE) || JSON.stringify(TASKS.map(() => false)));
+}
+
+let doneState = loadState();
+let streak = parseInt(localStorage.getItem(KEY_STREAK) || '0');
+let quoteIdx = parseInt(localStorage.getItem(KEY_QUOTE) || Math.floor(Math.random() * QUOTES.length));
+
+function saveState() {
+  localStorage.setItem(KEY_DONE, JSON.stringify(doneState));
+  localStorage.setItem(KEY_STREAK, streak);
+  localStorage.setItem(KEY_QUOTE, quoteIdx);
+}
+
+function resetDay() {
+  if (!confirm('Bugünkü ilerlemeyi sıfırlamak istediğine emin misin?')) return;
+  doneState = TASKS.map(() => false);
+  streak = Math.max(0, streak - 1);
+  saveState();
+  render();
+}
+
+function nextQuote() {
+  quoteIdx = (quoteIdx + 1) % QUOTES.length;
+  saveState();
+  document.getElementById('motive-text').textContent = QUOTES[quoteIdx];
+}
+
+function render() {
+  const greetings = ['İyi sabahlar!', 'Günaydın!', 'Merhaba!', 'İyi akşamlar!'];
+  const h = new Date().getHours();
+  document.getElementById('greeting').textContent = h < 6 ? greetings[0] : h < 12 ? greetings[1] : h < 18 ? greetings[2] : greetings[3];
+  document.getElementById('streak-num').textContent = streak;
+  document.getElementById('day-label').textContent = 'Gün ' + (streak + 1);
+
+  const dots = document.getElementById('streak-dots');
+  dots.innerHTML = '';
+  for (let i = 0; i < 7; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i < streak ? ' filled' : i === streak ? ' today' : '');
+    dots.appendChild(d);
+  }
+
+  const done = doneState.filter(Boolean).length;
+  const total = TASKS.length;
+  document.getElementById('prog-text').textContent = done + ' / ' + total;
+  document.getElementById('prog-fill').style.width = Math.round(done / total * 100) + '%';
+
+  const list = document.getElementById('tasks-list');
+  list.innerHTML = '';
+  TASKS.forEach((t, i) => {
+    const div = document.createElement('div');
+    div.className = 'task' + (doneState[i] ? ' done' : '');
+    div.innerHTML = `
+      <div class="task-icon" style="background:${t.color}">${t.icon}</div>
+      <div class="task-body">
+        <div class="task-name">${t.name}</div>
+        <div class="task-desc">${t.desc}</div>
+      </div>
+      <div class="check-circle">
+        <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
+          <path d="M1.5 5L5 8.5L11.5 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>`;
+    div.onclick = () => { doneState[i] = !doneState[i]; if (doneState.every(Boolean)) streak++; saveState(); render(); };
+    list.appendChild(div);
+  });
+
+  const congrats = document.getElementById('congrats');
+  if (done === total) {
+    congrats.classList.add('show');
+    document.getElementById('congrats-sub').textContent = 'Bugün ' + total + '/' + total + ' görevi tamamladın. Serini korudun!';
+  } else {
+    congrats.classList.remove('show');
+  }
+
+  document.getElementById('motive-text').textContent = QUOTES[quoteIdx % QUOTES.length];
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+render();
+</script>
+</body>
+</html>
